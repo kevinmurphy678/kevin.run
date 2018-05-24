@@ -51,9 +51,29 @@ html{
   tab-size: 4;
 }
 
-rick{
-
+#rick{
+  -webkit-animation: rotation 5s infinite alternate linear;
 }
+
+@-webkit-keyframes rotation {
+  0%{
+    -webkit-transform: rotate(0deg);
+  }
+
+  25%{
+    -webkit-transform: scale(0.5);
+  }
+  50%{
+    -webkit-transform: rotate(180deg);
+  }
+  75%{
+    -webkit-transform: scale(1);
+  }
+  100%{
+    -webkit-transform: rotate(-180deg);
+  }
+}
+
 iframe{
   transform: translateX(-25%);
 }
