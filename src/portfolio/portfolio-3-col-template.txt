@@ -1,0 +1,11 @@
+            <div class="grid__brick col-md-4" data-groups='["default"]' data-date-created="DATE" data-title="NAME">
+                <div class = "well">
+				<a href="SRCLINK">
+                    <img class="img-responsive img-hover" src="SRCIMG" alt="">
+                </a>
+             
+                    <h3>   <a href="SRCLINK">NAME</a>  </h3>
+              
+                <p>DESCRIPTION </p>
+				</div>
+            </div>

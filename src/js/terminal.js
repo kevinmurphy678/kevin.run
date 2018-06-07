@@ -13,8 +13,6 @@ var dialogue	=	document.getElementsByClassName("dialogue")[0];
 }(dialogue));
 function snakeText(from, to, refreshRate, charAmount, autoScroll, endFunction){
 
-
-
   var fromText, toText, l, i,
     refreshRate		=	refreshRate	|| 20,
     charAmount		=	charAmount	|| 1;
@@ -37,7 +35,7 @@ function snakeText(from, to, refreshRate, charAmount, autoScroll, endFunction){
 
     var from	=	fromText.data;
     if(!from.length) {
-      if(endFunction) lol();
+      if(endFunction) loadSite();
       return clearInterval(interval);
     }
     toText.data		+=	from.substr(0, charAmount);
@@ -54,13 +52,17 @@ function snakeText(from, to, refreshRate, charAmount, autoScroll, endFunction){
   return interval;
 }
 
-stringData = "\n kevin@murphy ~ $ sudo su \n [sudo] password for kevin:       \n murphy # ./kevin.run\n Loading Website...."
+var stringData = "\n kevin@murphy ~ $ sudo su \n [sudo] password for kevin:       \n murphy # ./kevin.run\n Loading Website.... \n .. \n .. \n .. \n"
+stringData2 = "\n\n\n\n ERROR \n CRITICAL ERROR. \n ABORT ABORT. \n WHY IS THIS HAPPENING? \n AAAAAAAAAAAAAA\n HELP\n 1234567890\n 42\n Your life is a lie.\n Nothing is real "
 
-stringData2 = "\n\n\n\n ERROR \n CRITICAL ERROR. \n ABORT ABORT. \n WHY IS THIS HAPPENING? \n NEVER GONNA GIVE YOU UP\n NEVER GONNA LET YOU DOWN......"
+//snakeText(document.createTextNode(stringData), terminalElement, 53, 2, true, true);
 
 
-
-snakeText(document.createTextNode(stringData), terminalElement, 53, 2, true, true);
+function loadSite(){
+    $("body").fadeOut(1000,function(){
+      window.location.replace("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
+    });
+}
 
 function lol(){
   $('#rick').show();
