@@ -1,5 +1,5 @@
 //https://codepen.io/uplusion23/pen/qbJVdg
-$('#rick').hide();
+//$('#rick').hide();
 
 
 var terminalElement = $(".terminal")[0];
