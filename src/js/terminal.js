@@ -60,7 +60,7 @@ stringData2 = "\n\n\n\n ERROR \n CRITICAL ERROR. \n ABORT ABORT. \n WHY IS THIS 
 
 function loadSite(){
     $("body").fadeOut(1000,function(){
-      window.location.replace("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
+      window.location.replace("http://kevin.run/portfolio");
     });
 }
 
