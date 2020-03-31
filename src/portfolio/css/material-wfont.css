@@ -2314,6 +2314,12 @@ select option {
   color: #EEEEEE;
 }
 
+pre{
+background-color:#FDD835;
+
+}
+
+
 .breadcrumb {
   padding: 8px 15px;
   margin-bottom: 20px;
@@ -5385,7 +5391,7 @@ icon-material-lightgrey {
   /**************************************************************************/
   border-radius: 2px;
   color: rgba(0, 0, 0, 0.84);
-  background: #ffffff;
+  background: #212121;
   box-shadow: 0 3px 10px rgba(0, 0, 0, 0.23), 0 3px 10px rgba(0, 0, 0, 0.16);
 }
 .card .card-height-indicator {

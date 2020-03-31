@@ -19,7 +19,7 @@
 
     <!-- Custom Fonts -->
        <link href="css/ripples.min.css" rel="stylesheet">
-    <link href="css/material-wfont.css" rel="stylesheet">
+      <link href="css/material-wfont.css" rel="stylesheet">
 
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -136,26 +136,1623 @@
 		   <iframe class="embed-responsive-item" src="http://www.youtube.com/embed/q7lYzUp9LXU"></iframe>
 		    </div>
 
-			<!--   <ul>
-                    <li>Lorem Ipsum</li>
-                    <li>Dolor Sit Amet</li>
-                    <li>Consectetur</li>
-                    <li>Adipiscing Elit</li>
 
-                </ul> -->
-
-
-
-            </div>
+        </div>
         </div>
 
         </div>
 
 
+      <hr>
+      <h1>Pixelation : Live Wallpaper</h1>
+      <p>
+        <div class="well">
+          <!-- Date/Time -->
+
+
+      <p>Pixelation is a live wallpaper that displays an animated scrolling grid of large multicolored pixels. Many options are included to help personalize and make the wallpaper unique. Customize colors, sizes, speeds, directions, and much more.</p>
+
+      <p>Features:
+
+      <ul>
+        <li>• Themes: Nice looking preset pixel colors available to chose from. Users can also save their own themes.</li>
+        <li>      • Colors: Customize the foreground and background pixel colors with colors of your choice.</li>
+        <li>      • Advanced Settings: Further customization. 20+ more options to tweak and customize.</li>
+        <li>      • Animated: Pixels are animated and scroll across the screen and swap colors.</li>
+        <li>      • Interactive: Each pixel reacts to touch input and scrolls with a parallax effect on your home screen. Pixels can also change colors in response to touch input.</li>
+       <li>       • 3D Parallax: Tilt your device and watch the pixels react as if you were looking through the device.</li>
+      </ul>
 
 
 
-        <!-- /.row -->
+      To use this live wallpaper:
+      Long press on Homescreen -> Wallpapers -> Live wallpapers and select it from the list.
+
+
+    </div>
+
+
+    <hr>
+
+        <h1> Source Code</h1>
+
+
+
+
+       <button class="btn btn-material-deeppurple" data-toggle="collapse" data-target="#code1">View java rendering code</button>
+
+       <button class="btn btn-material-deeppurple" data-toggle="collapse" data-target="#code2">View android gui/settings code</button>
+
+       <div id="code1" class="collapse">
+
+            <h3>Java rendering logic</h3>
+             <pre>
+                 <code class="language-java">
+package com.km.wallpaper03;
+import com.badlogic.gdx.ApplicationListener;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Preferences;
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.GL10;
+import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.utils.Array;
+import java.util.Random;
+
+public class shaderPaper01 implements ApplicationListener {
+    public static float xOffset, xOffsetStep;
+    float xSmooth, ySmooth, zSmooth;
+    double prevPitch;
+    double prevRoll;
+    float xO, yO;
+    double dgX, dgY;
+    float time;
+    private Boolean isPreview;
+    private Preferences prefs;
+    private Vector3 color1, color2, color3, color4, colorBG, colorTouch;
+    private int directionBG, directionFG;
+    private int flickerAmountBG, flickerAmountFG;
+    private int scrollSpeedBG, scrollSpeedFG;
+    private Array<ColorRectangle> backgroundRects = new Array<ColorRectangle>();
+    private Array<ColorRectangle> foregroundRects = new Array<ColorRectangle>();
+    private ShapeRenderer renderer;
+    private SpriteBatch batch, shaderBatch;
+    private Texture vignette;
+    private OrthographicCamera camera;
+    private int screenSize;
+    private int squareSizeBG, squareSizeFG;
+    private float prevWidth, prevHeight;
+    private float squareWidthBG, squareWidthFG;
+    private int spaceBG, spaceFG;
+    private boolean flatColoring;
+    private boolean fgBG;
+    private boolean bgAlt;
+    private boolean bgRandom;
+    private boolean fgRandom;
+    private boolean scrollInput;
+    private float transparency;
+    private float vigt;
+    private int parallaxSensitivity;
+    private boolean useParallax;
+    private boolean vignetteB;
+    private boolean useTouch;
+    private boolean useTouchColor;
+    private boolean keepTouchColor;
+    private int touchDistance;
+    private int touchSpeedUp;
+    private int touchSpeedDown;
+    private int touchSetting = 0;//TODO: More touch settings
+    private float xOffsetFinal;
+    private boolean wireframe, wireframe1;
+    private boolean touchSpeedBG;
+    private boolean touchSpeedFG;
+    private int touchSpeedBGTarget;
+    private int touchSpeedFGTarget;
+    private int scrollSpeedBGOriginal;
+    private int scrollSpeedFGOriginal;
+    private Sprite rectangleSprite;
+    private Random random = new Random();
+    private Boolean initiated = false;
+    private Boolean render = false;
+
+    public shaderPaper01(boolean isPreview2) {
+        isPreview = isPreview2;
+    }
+
+    private Vector3 colorFromHex(long hex) {
+        float r = (hex & 0xFF0000L) >> 16;
+        float g = (hex & 0xFF00L) >> 8;
+        float b = (hex & 0xFFL);
+        return new Vector3(r / 255f, g / 255f, b / 255f);
+    }
+
+    //Load preferences
+    private void loadPrefs() {
+        int c1 = prefs.getInteger("color1", 0xff282828);//BG 1
+        int c2 = prefs.getInteger("color2", 0xff646464);//BG 2
+        int c3 = prefs.getInteger("color3", 0xff32A5CF);//FG 1
+        int c4 = prefs.getInteger("color4", 0xff32A5CF);//BG DYN
+
+        int cTouch = prefs.getInteger("colorTouch", 0xffFFFFFF);
+        int cBG = prefs.getInteger("colorBG", 0xff000000);
+
+        color1 = colorFromHex(c1);
+        color2 = colorFromHex(c2);
+        color3 = colorFromHex(c3);
+        color4 = colorFromHex(c4);
+        colorBG = colorFromHex(cBG);
+        colorTouch = colorFromHex(cTouch);
+
+        directionBG = prefs.getInteger("directionSettingBG", 0);
+        directionFG = prefs.getInteger("directionSettingFG", 0);
+
+        spaceFG = prefs.getInteger("spaceFG", 0);
+        spaceBG = prefs.getInteger("spaceBG", 0);
+
+        flickerAmountBG = prefs.getInteger("flickerAmountBG", 100);
+        flickerAmountFG = prefs.getInteger("flickerAmountFG", 100);
+        scrollSpeedBG = prefs.getInteger("scrollSpeedBG", 100);
+        scrollSpeedFG = prefs.getInteger("scrollSpeedFG", 100);
+
+        scrollSpeedBGOriginal = scrollSpeedBG;
+        scrollSpeedFGOriginal = scrollSpeedFG;
+
+        touchSpeedDown = prefs.getInteger("touchSpeedDown", 100);
+        touchSpeedUp = prefs.getInteger("touchSpeedUp", 100);
+
+        transparency = prefs.getFloat("transparency", 1);
+
+        squareSizeBG = prefs.getInteger("squareSizeBG", 48);
+        squareSizeFG = prefs.getInteger("squareSizeFG", 96);
+
+        touchDistance = prefs.getInteger("touchDistance", 5);
+
+        if (squareSizeBG <= 0)
+            squareSizeBG = 48;
+        if (squareSizeFG <= 0)
+            squareSizeFG = 96;
+
+        useTouch = prefs.getBoolean("useTouch", true);
+        keepTouchColor = prefs.getBoolean("keepTouchColor", true);
+        useTouchColor = prefs.getBoolean("useTouchColor", false);
+        useParallax = prefs.getBoolean("useParallax", false);
+        flatColoring = prefs.getBoolean("flatColoring", false);
+        fgBG = prefs.getBoolean("fgBG", true);
+        scrollInput = prefs.getBoolean("scrollInput", true);
+        bgAlt = prefs.getBoolean("bgAlt", true);
+        fgRandom = prefs.getBoolean("fgRandom", false);
+        bgRandom = prefs.getBoolean("bgRandom", false);
+
+        vignetteB = prefs.getBoolean("vignette", true);
+        vigt = prefs.getFloat("vignetteTransparency", 1);
+
+        squareWidthBG = screenSize / squareSizeBG;
+        squareWidthFG = screenSize / squareSizeFG;
+
+        parallaxSensitivity = prefs.getInteger("parallaxSensitivity", 100);
+
+        touchSpeedFG = prefs.getBoolean("touchSpeedFG", false);
+        touchSpeedBG = prefs.getBoolean("touchSpeedBG", false);
+        touchSpeedBGTarget = prefs.getInteger("touchSpeedBGTarget", 0);
+        touchSpeedFGTarget = prefs.getInteger("touchSpeedFGTarget", 500);
+
+        wireframe = prefs.getBoolean("wireframe", false);
+        wireframe1 = prefs.getBoolean("wireframe1", false);
+
+
+    }
+
+    private Color newBgColor() {
+        Vector3 col = new Vector3();
+        if (!bgRandom) {
+            if (random.nextFloat() < 0.5f) {
+                col = new Vector3(color2);
+                if (!flatColoring)
+                    col.lerp(color1, random.nextFloat());
+            } else {
+                col = new Vector3(color1);
+                if (!flatColoring)
+                    col.lerp(color2, random.nextFloat() / 10f);
+            }
+        } else {
+            col.x = (float) Math.random();
+            col.y = (float) Math.random();
+            col.z = (float) Math.random();
+        }
+
+        Color rColor = new Color(col.x, col.y, col.z, 1);
+
+        return rColor;
+    }
+
+    //FOREGROUND
+    private void handleForegroundRects() {
+
+        for (ColorRectangle rect : foregroundRects) {
+
+            if (random.nextFloat() < .0005f * flickerAmountFG / 100f) {
+                rect.draw = true;
+                if (!fgRandom) {
+                    rect.color = new Color(color3.x, color3.y, color3.z, transparency);
+                } else {
+                    rect.color = new Color((float) Math.random(), (float) Math.random(), (float) Math.random(), transparency);
+                }
+
+                rect.changed = true;
+            }
+            if (fgBG) {
+                if (random.nextFloat() < .0001f * flickerAmountFG / 100f) {
+                    rect.draw = true;
+                    if (!fgRandom) {
+                        rect.color = newBgColor();
+                        rect.color.a = transparency;
+                    } else {
+                        rect.color = new Color((float) Math.random(), (float) Math.random(), (float) Math.random(), transparency);
+                    }
+                    rect.changed1 = true;
+                }
+            }
+
+            if (rect.changed == true) {
+                rect.timeAlive += Gdx.graphics.getDeltaTime();
+                if (rect.timeAlive > 2) {
+                    rect.draw = false;
+                    rect.timeAlive = 0;
+                    rect.changed = false;
+
+                }
+            }
+            if (rect.changed1 == true) {
+                rect.timeAlive += Gdx.graphics.getDeltaTime();
+                if (rect.timeAlive > 1.5f) {
+                    rect.draw = false;
+                    rect.changed1 = false;
+                    rect.timeAlive = 0;
+                }
+            }
+            if (directionFG == 0)//Left
+            {
+                rect.rectangle.x -= 2 * (scrollSpeedFG / 100f);
+                if (rect.rectangle.x <= -squareSizeFG) {
+                    float difference = Math.abs(rect.rectangle.x) - squareSizeBG;
+                    rect.rectangle.x = Math.round(squareWidthFG) * squareSizeFG + squareSizeFG - difference;
+                }
+            } else if (directionFG == 1)//Right
+            {
+                rect.rectangle.x += 2 * (scrollSpeedFG / 100f);
+                if (rect.rectangle.x >= Math.round(squareWidthFG) * squareSizeFG + squareSizeFG * 2) {
+                    float difference = rect.rectangle.x - Math.abs(Math.round(squareWidthFG) * squareSizeFG + squareSizeFG);
+                    rect.rectangle.x = -squareSizeFG + difference;
+                }
+            } else if (directionFG == 2)//Up
+            {
+                rect.rectangle.y += 2 * (scrollSpeedFG / 100f);
+                if (rect.rectangle.y >= Math.round(squareWidthFG) * squareSizeFG + squareSizeFG * 2) {
+                    float difference = rect.rectangle.y - Math.abs(Math.round(squareWidthFG) * squareSizeFG + squareSizeFG);
+                    rect.rectangle.y = -squareSizeFG + difference;
+                }
+            } else if (directionFG == 3)//Down
+            {
+                rect.rectangle.y -= 2 * (scrollSpeedFG / 100f);
+                if (rect.rectangle.y <= -squareSizeFG) {
+                    float difference = Math.abs(rect.rectangle.y) - squareSizeBG;
+                    rect.rectangle.y = Math.round(squareWidthFG) * squareSizeFG + squareSizeFG - difference;
+                }
+            }
+
+
+        }
+    }
+
+    //Create rectangles for normal rendering method
+    private void loadRects() {
+        backgroundRects.clear();
+        foregroundRects.clear();
+        //Bg rects
+        for (int x = -5; x < squareWidthBG + 5; x++) {
+            for (int y = -5; y < squareWidthBG + 5; y++) {
+                ColorRectangle rect = new ColorRectangle();
+                Rectangle rRect = new Rectangle(x * squareSizeBG, y * squareSizeBG, squareSizeBG - spaceBG, squareSizeBG - spaceBG);
+
+                rect.rectangle = rRect;
+                rect.color = newBgColor();
+
+                backgroundRects.add(rect);
+            }
+        }
+
+        //Fg rects
+        for (int x = 0; x < squareWidthFG + 1; x++) {
+            for (int y = 0; y < squareWidthFG + 1; y++) {
+                ColorRectangle rect = new ColorRectangle();
+                Rectangle rRect = new Rectangle(x * squareSizeFG, y * squareSizeFG, squareSizeFG - spaceFG, squareSizeFG - spaceFG);
+
+                rect.rectangle = rRect;
+                rect.color = Color.CLEAR;
+                rect.draw = false;
+                foregroundRects.add(rect);
+            }
+        }
+
+    }
+
+    //BACKGROUND
+    private void handleBackgroundRects() {
+
+        for (ColorRectangle rect : backgroundRects) {
+            if (random.nextFloat() < .0002f * flickerAmountBG / 100f) {
+                rect.color = new Color(color4.x, color4.y, color4.z, 1);
+                rect.changed = true;
+            }
+
+            if (bgAlt) {
+                if (random.nextFloat() < .0001f * flickerAmountBG / 100f) {
+                    rect.color = newBgColor();
+                    rect.changed1 = true;
+                }
+            }
+
+            if (rect.changed == true) {
+                rect.timeAlive += Gdx.graphics.getDeltaTime();
+                if (rect.timeAlive > 2) {
+                    rect.color = newBgColor();
+                    rect.changed = false;
+                    rect.timeAlive = 0;
+                }
+            }
+
+            if (rect.changed1 == true) {
+                rect.timeAlive += Gdx.graphics.getDeltaTime();
+                if (rect.timeAlive > 2) {
+                    rect.color = newBgColor();
+                    rect.changed1 = false;
+                    rect.timeAlive = 0;
+                }
+            }
+
+            if (directionBG == 0)//Left
+            {
+                rect.rectangle.x -= 1 * (scrollSpeedBG / 100f);
+                if (rect.rectangle.x <= -squareSizeBG * 4) {
+                    float difference = Math.abs(rect.rectangle.x) - squareSizeBG * 4;
+                    rect.rectangle.x = Math.round(squareWidthBG) * squareSizeBG + squareSizeBG * 4 - difference;
+                    rect.color = newBgColor();
+                }
+            } else if (directionBG == 1)//Right
+            {
+                rect.rectangle.x += 1 * (scrollSpeedBG / 100f);
+                if (rect.rectangle.x >= Math.round(squareWidthBG) * squareSizeBG + squareSizeBG * 4) {
+                    float difference = rect.rectangle.x - Math.abs(Math.round(squareWidthBG) * squareSizeBG + squareSizeBG * 4);
+                    rect.rectangle.x = -squareSizeBG * 4 + difference;
+                    rect.color = newBgColor();
+                }
+            } else if (directionBG == 2)//Up
+            {
+                rect.rectangle.y += 1 * (scrollSpeedBG / 100f);
+                if (rect.rectangle.y >= Math.round(squareWidthBG) * squareSizeBG + squareSizeBG * 4) {
+                    float difference = rect.rectangle.y - Math.abs(Math.round(squareWidthBG) * squareSizeBG + squareSizeBG * 4);
+                    rect.rectangle.y = -squareSizeBG * 4 + difference;
+                    rect.color = newBgColor();
+                }
+            } else if (directionBG == 3)//Down
+            {
+                rect.rectangle.y -= 1 * (scrollSpeedBG / 100f);
+                if (rect.rectangle.y <= -squareSizeBG * 4) {
+                    float difference = Math.abs(rect.rectangle.y) - squareSizeBG * 4;
+                    rect.rectangle.y = Math.round(squareWidthBG) * squareSizeBG + squareSizeBG * 4 - difference;
+                    rect.color = newBgColor();
+                }
+            }
+        }
+    }
+
+    private void setup() {
+        prefs = Gdx.app.getPreferences("wallpapersettings3");
+
+
+        if (Gdx.graphics.getHeight() > Gdx.graphics.getWidth())
+            screenSize = Gdx.graphics.getHeight() + 512;
+        else
+            screenSize = Gdx.graphics.getWidth() + 512;
+
+        renderer = new ShapeRenderer();
+
+        camera = new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        camera.translate(Gdx.graphics.getWidth() / 2, Gdx.graphics.getHeight() / 2);
+
+        batch = new SpriteBatch();
+        shaderBatch = new SpriteBatch();
+        vignette = new Texture(Gdx.files.internal("data/vig.png"));
+
+
+        loadPrefs();
+        loadRects();
+
+        rectangleSprite = new Sprite(new Texture(Gdx.files.internal(("data/pixel.png"))));
+
+    }
+
+    @Override
+    public void create() {
+
+    }
+
+    @Override
+    public void dispose() {
+    }
+
+    @Override
+    public void render() {
+
+        time += Gdx.graphics.getDeltaTime();
+
+
+        if (initiated == false) {
+            setup();
+            initiated = true;
+            render = true;
+        }
+
+
+        if (scrollInput)
+            xOffsetFinal = xOffset * 512f;
+        else
+            xOffsetFinal = 0;
+
+        if (Gdx.graphics.isGL20Available() && render) {
+
+            //Draw
+            Gdx.gl.glClearColor(colorBG.x, colorBG.y, colorBG.z, 1);
+            Gdx.gl.glClear(GL10.GL_COLOR_BUFFER_BIT);
+
+            handleBackgroundRects();
+            handleForegroundRects();
+
+            Gdx.gl.glEnable(GL10.GL_BLEND);
+            Gdx.gl.glBlendFunc(GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA);
+
+            try {
+
+                Gdx.gl.glClearColor(colorBG.x, colorBG.y, colorBG.z, 1);
+                Gdx.gl.glClear(GL10.GL_COLOR_BUFFER_BIT);
+
+                batch.begin();
+
+                float touchdown = touchSpeedDown / 100f;
+                float touchup = touchSpeedUp / 100f;
+
+                //Normal rendering
+                for (ColorRectangle rect : backgroundRects) {
+                    if (rect.rectangle.x > -squareSizeBG * 5 + xOffsetFinal && rect.rectangle.x < Gdx.graphics.getWidth() + xOffsetFinal + squareSizeBG * 5) {
+                        if (rect.rectangle.y > -squareSizeBG * 5 && rect.rectangle.y < Gdx.graphics.getHeight() + squareSizeBG * 5) {
+
+                            if (!wireframe) {
+                                rectangleSprite.setColor(rect.color);
+                                rectangleSprite.setBounds(rect.rectangle.x - xO, rect.rectangle.y - yO, rect.rectangle.width, rect.rectangle.height);
+                                rectangleSprite.draw(batch);
+                            } else {
+
+                                rectangleSprite.setColor(rect.color);
+
+                                float x = rect.rectangle.x - xO;
+                                float y = rect.rectangle.y - yO;
+                                float width = rect.rectangle.width;
+                                float height = rect.rectangle.height;
+
+
+                                rectangleSprite.setBounds(x + 2, y + 2, 2, height - 2);
+                                rectangleSprite.draw(batch);
+
+                                rectangleSprite.setBounds(x + 2, y + height - 2, width - 2, 2);
+                                rectangleSprite.draw(batch);
+
+                                rectangleSprite.setBounds(x + 2, y + 2, width - 2, 2);
+                                rectangleSprite.draw(batch);
+
+                                rectangleSprite.setBounds(x + width - 2, y + 2, 2, height - 2);
+                                rectangleSprite.draw(batch);
+                            }
+                        }
+                    }
+
+                    if (useTouch) {
+                        if (Gdx.input.isTouched()) {
+                            if (rect.rectangle.x > -squareSizeBG + xOffsetFinal && rect.rectangle.x < Gdx.graphics.getWidth() + xOffsetFinal + squareSizeBG) {
+                                if (rect.rectangle.y > -squareSizeBG && rect.rectangle.y < Gdx.graphics.getHeight() + squareSizeBG) {
+
+
+                                    float distance = new Vector2(rect.rectangle.getX(), rect.rectangle.getY()).
+                                            dst(Gdx.input.getX() + xOffsetFinal + xO, Gdx.graphics.getHeight() - Gdx.input.getY() + yO);
+
+                                    distance /= (float) squareSizeBG / 2;
+                                    if (distance < touchDistance && distance > 0) {
+
+                                        if (touchSetting == 0) {
+                                            if (rect.rectangle.width > 8) {
+                                                rect.rectangle.width -= 5.0f / MathUtils.clamp(distance, 1, 10000) * (touchdown);
+                                                rect.rectangle.height -= 5.0f / MathUtils.clamp(distance, 1, 10000) * (touchdown);
+                                                rect.rectangle.x += 2.50f / MathUtils.clamp(distance, 1, 10000) * (touchdown);
+                                                rect.rectangle.y += 2.50f / MathUtils.clamp(distance, 1, 10000) * (touchdown);
+                                            }
+
+                                            if (useTouchColor) {
+
+                                                if (rect.color.r > colorTouch.x)
+                                                    rect.color.r -= 0.01f;
+                                                else if (rect.color.r < colorTouch.x)
+                                                    rect.color.r += 0.01f;
+
+                                                if (rect.color.g > colorTouch.y)
+                                                    rect.color.g -= 0.01f;
+                                                else if (rect.color.g < colorTouch.y)
+                                                    rect.color.g += 0.01f;
+
+                                                if (rect.color.b > colorTouch.z)
+                                                    rect.color.b -= 0.01f;
+                                                else if (rect.color.b < colorTouch.z)
+                                                    rect.color.b += 0.01f;
+
+                                            }
+                                        }
+                                    }
+
+                                }
+                            }
+
+                        }
+
+                        if (rect.rectangle.width < squareSizeBG - spaceBG) {
+                            if (touchSetting == 0) {
+                                rect.rectangle.width += 0.2f * (touchup);
+                                rect.rectangle.height += 0.2f * (touchup);
+                                rect.rectangle.x -= 0.1f * (touchup);
+                                rect.rectangle.y -= 0.1f * (touchup);
+
+                            }
+
+                            if (useTouchColor) {
+                                if (rect.rectangle.width >= squareSizeBG - spaceBG && !keepTouchColor)
+                                    rect.color = newBgColor();
+                            }
+                        }
+
+                    }
+
+
+                }
+                for (ColorRectangle rect : foregroundRects) {
+                    if (rect.draw) {
+                        if (!wireframe1) {
+                            rectangleSprite.setColor(rect.color);
+                            rectangleSprite.setBounds(rect.rectangle.x - xO / 2, rect.rectangle.y - yO / 2, rect.rectangle.width, rect.rectangle.height);
+                            rectangleSprite.draw(batch);
+                        } else {
+
+                            rectangleSprite.setColor(rect.color);
+
+                            float x = rect.rectangle.x - xO / 2;
+                            float y = rect.rectangle.y - yO / 2;
+                            float width = rect.rectangle.width;
+                            float height = rect.rectangle.height;
+
+
+                            rectangleSprite.setBounds(x + 2, y + 2, 2, height - 2);
+                            rectangleSprite.draw(batch);
+
+                            rectangleSprite.setBounds(x + 2, y + height - 2, width - 2, 2);
+                            rectangleSprite.draw(batch);
+
+                            rectangleSprite.setBounds(x + 2, y + 2, width - 2, 2);
+                            rectangleSprite.draw(batch);
+
+                            rectangleSprite.setBounds(x + width - 2, y + 2, 2, height - 2);
+                            rectangleSprite.draw(batch);
+                        }
+
+                    }
+
+                }
+
+                batch.end();
+
+
+                if (Gdx.input.isTouched()) {
+                    //touch accel
+                    if (touchSpeedBG) {
+                        if (scrollSpeedBG < touchSpeedBGTarget) {
+                            scrollSpeedBG += 2;
+                        } else {
+                            scrollSpeedBG -= 2;
+                        }
+                    }
+
+                    if (touchSpeedFG) {
+                        if (scrollSpeedFG < touchSpeedFGTarget) {
+                            scrollSpeedFG += 1;
+                        } else {
+                            scrollSpeedFG -= 1;
+                        }
+                    }
+                } else {
+
+                    if (scrollSpeedBG < scrollSpeedBGOriginal) {
+                        scrollSpeedBG += 2;
+                    } else {
+                        scrollSpeedBG -= 2;
+                    }
+
+                    if (scrollSpeedFG < scrollSpeedFGOriginal) {
+                        scrollSpeedFG += 2;
+                    } else {
+                        scrollSpeedFG -= 2;
+                    }
+
+                }
+
+                if (useParallax) {
+                    float smoothness = 0.95f;
+
+                    float x = Gdx.input.getAccelerometerX();
+                    float y = Gdx.input.getAccelerometerY();
+                    float z = Gdx.input.getAccelerometerZ();
+
+                    xSmooth = xSmooth * smoothness + (1 - smoothness) * x;
+                    ySmooth = ySmooth * smoothness + (1 - smoothness) * y;
+                    zSmooth = zSmooth * smoothness + (1 - smoothness) * z;
+
+                    double roll = 0;// = Math.atan2(xSmooth, zSmooth) * 180/MathUtils.PI;
+                    double pitch = 0;// = Math.atan2(ySmooth, Math.sqrt(xSmooth*xSmooth + zSmooth*zSmooth)) * 180/MathUtils.PI;
+
+
+                    // normalize gravity vector at first
+                    double gSum = Math.sqrt(xSmooth * xSmooth + ySmooth * ySmooth + zSmooth * zSmooth);
+                    if (gSum != 0) {
+                        xSmooth /= gSum;
+                        ySmooth /= gSum;
+                        zSmooth /= gSum;
+                    }
+                    if (zSmooth != 0)
+                        roll = Math.atan2(xSmooth, zSmooth) * 180 / MathUtils.PI;
+                    pitch = Math.sqrt(xSmooth * xSmooth + zSmooth * zSmooth);
+                    if (pitch != 0)
+                        pitch = Math.atan2(ySmooth, pitch) * 180 / MathUtils.PI;
+
+                    dgX = (roll - prevRoll);
+                    dgY = (pitch - prevPitch);
+
+                    if (ySmooth > 0.97f) dgX = 0;
+                    if (dgX > 180) dgX = 0;
+                    if (dgX < -180) dgX = 0;
+                    if (dgY > 180) dgY = 0;
+                    if (dgY < -180) dgY = 0;
+
+                    if (Math.abs(dgX) > 10) dgX = 0;
+                    if (Math.abs(dgY) > 10) dgY = 0;
+
+                    if (Math.abs(dgX) < 1) dgX = 0;
+                    if (Math.abs(dgY) < 1) dgY = 0;
+
+
+                    float sens = 2 * parallaxSensitivity / 100f;
+
+                    xO -= dgX * sens;
+                    yO -= dgY * sens;
+
+                    int cap = 170;
+
+                    if (xO > cap) xO = cap;
+                    if (xO < -cap) xO = -cap;
+                    if (yO > cap) yO = cap;
+                    if (yO < -cap) yO = -cap;
+
+
+                    prevRoll = roll;
+                    prevPitch = pitch;
+                } else {
+                    xO = 0;
+                    yO = 0;
+                }
+
+                camera.position.set(Gdx.graphics.getWidth() / 2 + xOffsetFinal, Gdx.graphics.getHeight() / 2, 0);
+                camera.update();
+
+
+                if (vignetteB) {
+                    batch.setProjectionMatrix(camera.combined);
+                    batch.begin();
+                    Sprite vp = new Sprite(vignette);
+                    vp.setColor(1, 1, 1, vigt);
+                    vp.setPosition(xOffsetFinal, 0);
+                    vp.setSize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+                    vp.draw(batch);
+                    batch.end();
+                }
+            } catch (Exception e) {
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e1) {
+                    // TODO Auto-generated catch block
+                }
+            }
+
+
+        }
+    }
+
+    @Override
+    public void resize(int width, int height) {
+
+        if (prevWidth != width || prevHeight != height) {
+            camera = new OrthographicCamera(width, height);
+            camera.translate(width / 2, height / 2);
+
+        }
+
+        prevWidth = width;
+        prevHeight = height;
+
+        if (Gdx.graphics.getHeight() > Gdx.graphics.getWidth())
+            screenSize = Gdx.graphics.getHeight() + 512;
+        else
+            screenSize = Gdx.graphics.getWidth() + 512;
+
+    }
+
+    @Override
+    public void pause() {
+
+    }
+
+    @Override
+    public void resume() {
+
+        if (prefs.getBoolean("change", true) && !isPreview) {
+            loadPrefs();
+            loadRects();
+            prefs.putBoolean("change", false);
+            prefs.flush();
+        } else if (prefs.getBoolean("changeP", true) && isPreview) {
+            loadPrefs();
+            loadRects();
+            prefs.putBoolean("changeP", false);
+            prefs.flush();
+        }
+
+    }
+}
+
+
+
+        </code>
+              </pre>
+
+       </div>
+
+       <div id="code2" class="collapse">
+         <h3>Android live wallpaper gui settings code</h3>
+         <pre>
+           <code class=language-java">
+
+  package com.km.wallpaper03;
+  import android.app.AlertDialog;
+  import android.content.DialogInterface;
+  import android.content.Intent;
+  import android.content.SharedPreferences;
+  import android.net.Uri;
+  import android.os.Bundle;
+  import android.preference.*;
+  import android.preference.Preference.OnPreferenceClickListener;
+  import android.view.Gravity;
+  import android.widget.EditText;
+  import android.widget.TextView;
+  import android.widget.Toast;
+  import com.badlogic.gdx.Gdx;
+  import com.badlogic.gdx.Preferences;
+  import com.km.wallpaper03.R;
+  import net.jayschwa.android.preference.SliderPreference;
+  import net.margaritov.preference.colorpicker.ColorPickerPreference;
+
+
+  public class LivewallpaperSettings extends AbstractBillingActivity {
+      SharedPreferences prefsAndroid;
+      String colorParticle, colorImage;
+      Boolean bought = false;
+      Boolean refunded = false;
+      private Preferences prefs = Gdx.app.getPreferences("wallpapersettings3");
+
+      @SuppressWarnings("deprecation")
+      @Override
+      public void onCreate(Bundle savedInstanceState) {
+
+          try {
+              Thread.sleep(10, 0);
+          } catch (InterruptedException e) {
+              // TODO Auto-generated catch block
+          }
+
+          prefsAndroid = PreferenceManager.getDefaultSharedPreferences(this);
+          super.onCreate(savedInstanceState);
+          addPreferencesFromResource(R.xml.prefs);
+
+          lockEverything();
+
+          if (prefs.getBoolean("upgraded", false)) {
+              unlockEverything();
+          }
+
+          if (prefs.getBoolean("freeUnlock", false)) {
+              unlockEverything();
+          }
+
+          unlockEverything();
+
+          if (refunded) {
+              lockEverything();
+              prefs.putBoolean("upgraded", false);
+              prefs.flush();
+          }
+
+
+          Preference restore = (Preference) findPreference("restore");
+          restore.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+              public boolean onPreferenceClick(Preference preference) {
+                  EditTextPreference scrollSpeedBG = (EditTextPreference) findPreference("scrollSpeedFG");
+                  scrollSpeedBG.setText("100");
+
+                  EditTextPreference scrollSpeedFG = (EditTextPreference) findPreference("scrollSpeedBG");
+                  scrollSpeedFG.setText("100");
+
+
+                  EditTextPreference squareSizeBG = (EditTextPreference) findPreference("squareSizeBG");
+                  squareSizeBG.setText("48");
+
+                  EditTextPreference squareSizeFG = (EditTextPreference) findPreference("squareSizeFG");
+                  squareSizeFG.setText("96");
+
+                  EditTextPreference parallaxSensitivity = (EditTextPreference) findPreference("parallaxSensitivity");
+                  parallaxSensitivity.setText("100");
+
+
+                  EditTextPreference spaceBG = (EditTextPreference) findPreference("spaceBG");
+                  spaceBG.setText("0");
+
+                  EditTextPreference spaceFG = (EditTextPreference) findPreference("spaceFG");
+                  spaceFG.setText("0");
+
+                  EditTextPreference flickerAmountBG = (EditTextPreference) findPreference("flickerAmountBG");
+                  flickerAmountBG.setText("100");
+
+                  EditTextPreference flickerAmountFG = (EditTextPreference) findPreference("flickerAmountFG");
+                  flickerAmountFG.setText("100");
+
+
+                  EditTextPreference touchDistance = (EditTextPreference) findPreference("touchDistance");
+                  touchDistance.setText("5");
+
+
+                  EditTextPreference touchSpeedUp = (EditTextPreference) findPreference("touchSpeedUp");
+                  touchSpeedUp.setText("100");
+
+
+                  EditTextPreference touchSpeedDown = (EditTextPreference) findPreference("touchSpeedDown");
+                  touchSpeedDown.setText("100");
+
+                  SliderPreference transparency = (SliderPreference) findPreference("transparency");
+                  transparency.setValue(1);
+
+                  SliderPreference vignetteTransparency = (SliderPreference) findPreference("vignetteTransparency");
+                  vignetteTransparency.setValue(1);
+
+                  ListPreference directionSettingFG = (ListPreference) findPreference("directionSettingFG");
+                  directionSettingFG.setValue("0");
+
+                  ListPreference directionSettingBG = (ListPreference) findPreference("directionSettingBG");
+                  directionSettingBG.setValue("0");
+
+                  ColorPickerPreference color1 = (ColorPickerPreference) findPreference("color1");
+                  color1.onColorChanged(0xff282828);
+
+                  ColorPickerPreference color2 = (ColorPickerPreference) findPreference("color2");
+                  color2.onColorChanged(0xff646464);
+
+                  ColorPickerPreference color3 = (ColorPickerPreference) findPreference("color3");
+                  color3.onColorChanged(0xff32A5CF);
+
+                  ColorPickerPreference color4 = (ColorPickerPreference) findPreference("color4");
+                  color4.onColorChanged(0xff32A5CF);
+
+                  ColorPickerPreference colorBG = (ColorPickerPreference) findPreference("colorBG");
+                  colorBG.onColorChanged(0xff000000);
+
+                  ColorPickerPreference colorTouch = (ColorPickerPreference) findPreference("colorTouch");
+                  colorTouch.onColorChanged(0xffFFFFFF);
+
+
+                  CheckBoxPreference touchSpeedBG = (CheckBoxPreference) findPreference("touchSpeedBG");
+                  touchSpeedBG.setChecked(false);
+
+                  CheckBoxPreference touchSpeedFG = (CheckBoxPreference) findPreference("touchSpeedFG");
+                  touchSpeedFG.setChecked(false);
+
+                  EditTextPreference touchSpeedBGTarget = (EditTextPreference) findPreference("touchSpeedBGTarget");
+                  touchSpeedBGTarget.setText("0");
+
+                  EditTextPreference touchSpeedFGTarget = (EditTextPreference) findPreference("touchSpeedFGTarget");
+                  touchSpeedFGTarget.setText("500");
+
+
+                  CheckBoxPreference keepTouchColor = (CheckBoxPreference) findPreference("keepTouchColor");
+                  keepTouchColor.setChecked(true);
+
+                  CheckBoxPreference useTouch = (CheckBoxPreference) findPreference("useTouch");
+                  useTouch.setChecked(true);
+
+                  CheckBoxPreference wireframe = (CheckBoxPreference) findPreference("wireframe");
+                  wireframe.setChecked(false);
+
+                  CheckBoxPreference wireframe1 = (CheckBoxPreference) findPreference("wireframe1");
+                  wireframe1.setChecked(false);
+
+                  CheckBoxPreference scrollInput = (CheckBoxPreference) findPreference("scrollInput");
+                  scrollInput.setChecked(true);
+
+
+                  CheckBoxPreference flatColoring = (CheckBoxPreference) findPreference("flatColoring");
+                  flatColoring.setChecked(false);
+
+
+                  CheckBoxPreference fgBG = (CheckBoxPreference) findPreference("fgBG");
+                  fgBG.setChecked(true);
+
+                  CheckBoxPreference bgAlt = (CheckBoxPreference) findPreference("bgAlt");
+                  bgAlt.setChecked(true);
+
+                  CheckBoxPreference fgRandom = (CheckBoxPreference) findPreference("fgRandom");
+                  fgRandom.setChecked(false);
+
+                  CheckBoxPreference bgRandom = (CheckBoxPreference) findPreference("bgRandom");
+                  bgRandom.setChecked(false);
+
+                  CheckBoxPreference vignette = (CheckBoxPreference) findPreference("vignette");
+                  vignette.setChecked(true);
+
+                  CheckBoxPreference useTouchColor = (CheckBoxPreference) findPreference("useTouchColor");
+                  useTouchColor.setChecked(false);
+
+                  CheckBoxPreference useParallax = (CheckBoxPreference) findPreference("useParallax");
+                  useParallax.setChecked(false);
+
+                  Toast.makeText(getBaseContext(), "Settings reset to default.", Toast.LENGTH_SHORT).show();
+                  return true;
+              }
+          });
+
+          //HoloDark
+          Preference theme_holoDark = (Preference) findPreference("theme_holoDark");
+          theme_holoDark.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+              public boolean onPreferenceClick(Preference preference) {
+                  setTheme(0xff282828, 0xff646464, 0xff32A5CF, 0xff32A5CF, "Holo Dark");
+                  EditTextPreference spaceBG = (EditTextPreference) findPreference("spaceBG");
+                  spaceBG.setText("0");
+                  return true;
+              }
+          });
+
+          //HoloLight
+          Preference theme_holoLight = (Preference) findPreference("theme_holoLight");
+          theme_holoLight.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+              public boolean onPreferenceClick(Preference preference) {
+                  setTheme(0xffEEEEEE, 0xff30A9D3, 0xff32A5CF, 0xff32A5CF, "Holo Light");
+                  EditTextPreference spaceBG = (EditTextPreference) findPreference("spaceBG");
+                  spaceBG.setText("0");
+                  return true;
+              }
+          });
+          //DeepOrange
+          Preference theme_deepOrange = (Preference) findPreference("theme_deepOrange");
+          theme_deepOrange.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+              public boolean onPreferenceClick(Preference preference) {
+                  setTheme(0xffDE5605, 0xffF7A035, 0xffEFECCA, 0xffEFECCA, "Deep Orange");
+                  EditTextPreference spaceBG = (EditTextPreference) findPreference("spaceBG");
+                  spaceBG.setText("0");
+                  return true;
+              }
+          });
+          //Flat Blue
+          Preference theme_flatBlue = (Preference) findPreference("theme_flatBlue");
+          theme_flatBlue.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+              public boolean onPreferenceClick(Preference preference) {
+                  setTheme(0xff3498DB, 0xff186DB9, 0xff2C3E50, 0xffECF0F1, "Flat Blue");
+                  EditTextPreference spaceBG = (EditTextPreference) findPreference("spaceBG");
+                  spaceBG.setText("0");
+                  return true;
+              }
+          });
+          //Dark Red
+          Preference theme_darkRed = (Preference) findPreference("theme_darkRed");
+          theme_darkRed.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+              public boolean onPreferenceClick(Preference preference) {
+                  setTheme(0xff590808, 0xff8C1B11, 0xffD98236, 0xffD98236, "Dark Red");
+                  EditTextPreference spaceBG = (EditTextPreference) findPreference("spaceBG");
+                  spaceBG.setText("2");
+
+                  return true;
+              }
+          });
+          //Rain Forest Green
+          Preference theme_rainForestGreen = (Preference) findPreference("theme_rainForestGreen");
+          theme_rainForestGreen.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+              public boolean onPreferenceClick(Preference preference) {
+                  setTheme(0xff37911B, 0xff54DE29, 0xff1F3811, 0xff1F3811, "Rainforest Green");
+                  EditTextPreference spaceBG = (EditTextPreference) findPreference("spaceBG");
+                  spaceBG.setText("0");
+                  return true;
+              }
+          });
+
+
+          //Pro Themes
+
+
+          //Hot Pink
+          Preference theme_hotPurple = (Preference) findPreference("theme_hotPurple");
+          theme_hotPurple.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+              public boolean onPreferenceClick(Preference preference) {
+                  setTheme(0xffEC6FFF, 0xff310062, 0xff2B173A, 0xff2D0059, "Hot Purple");
+                  EditTextPreference spaceBG = (EditTextPreference) findPreference("spaceBG");
+                  spaceBG.setText("2");
+                  return true;
+              }
+          });
+
+          //RWB
+          Preference theme_redWhiteblue = (Preference) findPreference("theme_redWhiteblue");
+          theme_redWhiteblue.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+              public boolean onPreferenceClick(Preference preference) {
+                  setTheme(0xffFCFCFC, 0xffFF0000, 0xff004FFF, 0xff004FFF, "Red White and Blue");
+                  EditTextPreference spaceBG = (EditTextPreference) findPreference("spaceBG");
+                  spaceBG.setText("2");
+                  return true;
+              }
+          });
+
+          //GRAY
+          Preference theme_grayScale = (Preference) findPreference("theme_grayScale");
+          theme_grayScale.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+              public boolean onPreferenceClick(Preference preference) {
+                  setTheme(0xff494949, 0xff2A2A2A, 0xffABABAB, 0xffABABAB, "Grayscale");
+                  EditTextPreference spaceBG = (EditTextPreference) findPreference("spaceBG");
+                  spaceBG.setText("4");
+                  return true;
+              }
+          });
+
+
+          //orange
+          Preference theme_modernOrange = (Preference) findPreference("theme_modernOrange");
+          theme_modernOrange.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+              public boolean onPreferenceClick(Preference preference) {
+                  setTheme(0xff424242, 0xffFF4500, 0xff8C8C8C, 0xff292929, "Modern Orange");
+                  EditTextPreference spaceBG = (EditTextPreference) findPreference("spaceBG");
+                  spaceBG.setText("2");
+                  return true;
+              }
+          });
+
+
+          //orangep
+          Preference theme_purplePlusOrange = (Preference) findPreference("theme_purplePlusOrange");
+          theme_purplePlusOrange.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+              public boolean onPreferenceClick(Preference preference) {
+                  setTheme(0xff570041, 0xffD34730, 0xffF9F9F9, 0xff828282, "Purple Plus Orange");
+                  EditTextPreference spaceBG = (EditTextPreference) findPreference("spaceBG");
+                  spaceBG.setText("2");
+                  return true;
+              }
+          });
+
+          //blackedout
+          Preference theme_blackedOut = (Preference) findPreference("theme_blackedOut");
+          theme_blackedOut.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+              public boolean onPreferenceClick(Preference preference) {
+                  setTheme(0xff0A0A0A, 0xff1F1F1F, 0xff000000, 0xff000000, "Blacked Out");
+                  EditTextPreference spaceBG = (EditTextPreference) findPreference("spaceBG");
+                  spaceBG.setText("0");
+                  return true;
+              }
+          });
+
+          //whitered
+          Preference theme_whiteRed = (Preference) findPreference("theme_whiteRed");
+          theme_whiteRed.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+              public boolean onPreferenceClick(Preference preference) {
+                  setTheme(0xffC7C7C7, 0xff8D1616, 0xff140000, 0xff2B0000, "Candy Cane");
+                  EditTextPreference spaceBG = (EditTextPreference) findPreference("spaceBG");
+                  spaceBG.setText("0");
+                  return true;
+              }
+          });
+
+          //whiteblack
+          Preference theme_whiteAndBlack = (Preference) findPreference("theme_whiteAndBlack");
+          theme_whiteAndBlack.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+              public boolean onPreferenceClick(Preference preference) {
+                  setTheme(0xffFFFFFF, 0xffC5C5C5, 0xff000000, 0xff202020, "Black and White");
+                  EditTextPreference spaceBG = (EditTextPreference) findPreference("spaceBG");
+                  spaceBG.setText("0");
+                  return true;
+              }
+          });
+
+
+          Preference addPreset = (Preference) findPreference("addPreset");
+          addPreset.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+              public boolean onPreferenceClick(Preference preference) {
+
+                  savePreset();
+                  return true;
+              }
+          });
+
+
+          Preference buy = (Preference) findPreference("buy");
+          buy.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+              public boolean onPreferenceClick(Preference preference) {
+                  Buy();
+                  if (bought) {
+                      prefs.putBoolean("upgraded", true);
+                      prefs.flush();
+                      unlockEverything();
+                  }
+                  return true;
+              }
+          });
+
+
+          Preference restoreBuy = (Preference) findPreference("restoreBuy");
+          restoreBuy.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+              public boolean onPreferenceClick(Preference preference) {
+                  restoreTransactions();
+                  return true;
+              }
+          });
+
+          Preference setColor2 = (Preference) findPreference("setColor2");
+          setColor2.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+              public boolean onPreferenceClick(Preference preference) {
+
+
+                  ColorPickerPreference color2 = (ColorPickerPreference) findPreference("color2");
+                  color2.onColorChanged(prefsAndroid.getInt("color1", 0xff00000));
+
+
+                  return true;
+              }
+          });
+
+          Preference setColor4 = (Preference) findPreference("setColor4");
+          setColor4.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+              public boolean onPreferenceClick(Preference preference) {
+
+                  ColorPickerPreference color4 = (ColorPickerPreference) findPreference("color4");
+                  color4.onColorChanged(prefsAndroid.getInt("color3", 0xff00000));
+
+                  return true;
+
+              }
+          });
+
+
+          PreferenceCategory themesUser = (PreferenceCategory) findPreference("themesUser");
+          final int num = prefs.getInteger("numPresets", 0);
+          Gdx.app.log("numpresets : ", "" + num);
+          if (num > 0) {
+              for (int i = 1; i < num + 1; i++) {
+
+                  if (!prefs.getString("name" + i).equals("963852748593886215")) {
+                      Preference preset = new Preference(this);
+                      preset.setTitle(prefs.getString("name" + i));
+                      preset.setKey("" + i);
+                      final int val = i;
+                      preset.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+                          public boolean onPreferenceClick(Preference preference) {
+
+                              themeDialog(val);
+                              return true;
+                          }
+                      });
+
+                      themesUser.addPreference(preset);
+                  }
+              }
+          }
+
+          rate();
+      }
+
+      private void savepresetprefs(int id, String name) {
+          prefs.putInteger("1preset" + id, prefsAndroid.getInt("color1", 0xff000000));
+          prefs.putInteger("2preset" + id, prefsAndroid.getInt("color2", 0xff000000));
+          prefs.putInteger("3preset" + id, prefsAndroid.getInt("color3", 0xff000000));
+          prefs.putInteger("4preset" + id, prefsAndroid.getInt("color4", 0xff000000));
+          prefs.putString("name" + id, name);
+          prefs.flush();
+          Toast.makeText(getBaseContext(), "Color preset saved: Preset " + name, Toast.LENGTH_SHORT).show();
+
+          final int val = id;
+          PreferenceCategory themesUser = (PreferenceCategory) findPreference("themesUser");
+          Preference preset = new Preference(this);
+          preset.setTitle(prefs.getString("name" + id));
+          preset.setKey("" + id);
+          preset.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+              public boolean onPreferenceClick(Preference preference) {
+                  themeDialog(val);
+                  return true;
+              }
+          });
+          themesUser.addPreference(preset);
+      }
+
+      private void rate() {
+          prefs.putInteger("launchCount", prefs.getInteger("launchCount", 0) + 1);
+          prefs.flush();
+          int launchCount = prefs.getInteger("launchCount", 0);
+          if (launchCount > 7) {
+              AlertDialog.Builder builder = new AlertDialog.Builder(this);
+              builder.setMessage("Like this wallpaper? Please take a minute to rate it in Google Play!")
+
+                      .setCancelable(false)
+                      .setPositiveButton("Rate", new DialogInterface.OnClickListener() {
+                          public void onClick(DialogInterface dialog, int idv) {
+                              startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=com.km.wallpaper03")));
+                              prefs.putInteger("launchCount", -9000000);
+                              prefs.flush();
+                          }
+                      })
+                      .setNegativeButton("Never", new DialogInterface.OnClickListener() {
+                          public void onClick(DialogInterface dialog, int idv) {
+                              prefs.putInteger("launchCount", -9000000);
+                              prefs.flush();
+                          }
+                      })
+                      .setNeutralButton("Later", new DialogInterface.OnClickListener() {
+                          public void onClick(DialogInterface dialog, int idv) {
+                              prefs.putInteger("launchCount", -10);
+                          }
+                      });
+
+              AlertDialog alert = builder.create();
+              alert.show();
+
+              TextView messageView = (TextView) alert.findViewById(android.R.id.message);
+              messageView.setGravity(Gravity.CENTER);
+
+          }
+      }
+
+      private void themeDialog(int id) {
+          AlertDialog.Builder builder = new AlertDialog.Builder(this);
+          final int val = id;
+          builder.setMessage(prefs.getString("name" + id))
+                  .setCancelable(true)
+                  .setPositiveButton("Apply", new DialogInterface.OnClickListener() {
+                      public void onClick(DialogInterface dialog, int idv) {
+                          loadPreset(val);
+                      }
+                  })
+                  .setNegativeButton("Delete", new DialogInterface.OnClickListener() {
+                      @SuppressWarnings("deprecation")
+                      public void onClick(DialogInterface dialog, int idv) {
+                          prefs.putString("name" + val, "963852748593886215");
+                          prefs.flush();
+                          PreferenceCategory themesUser = (PreferenceCategory) findPreference("themesUser");
+                          themesUser.removePreference(findPreference("" + val));
+
+                      }
+                  });
+
+          AlertDialog alert = builder.create();
+          alert.show();
+
+      }
+
+      private void savePreset() {
+
+          AlertDialog.Builder alert = new AlertDialog.Builder(this);
+
+          alert.setTitle("Name");
+          alert.setMessage("Enter a name for the preset");
+
+          // Set an EditText view to get user input
+          final EditText input = new EditText(this);
+          alert.setView(input);
+
+          alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+              public void onClick(DialogInterface dialog, int whichButton) {
+                  String value = input.getText().toString();
+                  prefs.putInteger("numPresets", prefs.getInteger("numPresets", 0) + 1);
+                  prefs.flush();
+                  int numPresets = prefs.getInteger("numPresets");
+                  savepresetprefs(numPresets, value);
+              }
+          });
+
+          alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+              public void onClick(DialogInterface dialog, int whichButton) {
+                  // Canceled.
+              }
+          });
+
+          alert.show();
+
+      }
+
+      private void loadPreset(int id) {
+          setTheme(prefs.getInteger("1preset" + id, 0xff000000),
+                  prefs.getInteger("2preset" + id, 0xff000000),
+                  prefs.getInteger("3preset" + id, 0xff000000),
+                  prefs.getInteger("4preset" + id, 0xff000000),
+                  "Preset: " + prefs.getString("name" + id));
+
+      }
+
+      @SuppressWarnings("deprecation")
+      private void toggleState(Boolean state) {
+          EditTextPreference scrollSpeedBG = (EditTextPreference) findPreference("scrollSpeedFG");
+          scrollSpeedBG.setEnabled(state);
+
+          EditTextPreference scrollSpeedFG = (EditTextPreference) findPreference("scrollSpeedBG");
+          scrollSpeedFG.setEnabled(state);
+
+          EditTextPreference spaceBG = (EditTextPreference) findPreference("spaceBG");
+          spaceBG.setEnabled(state);
+
+          EditTextPreference spaceFG = (EditTextPreference) findPreference("spaceFG");
+          spaceFG.setEnabled(state);
+
+          EditTextPreference flickerAmountBG = (EditTextPreference) findPreference("flickerAmountBG");
+          flickerAmountBG.setEnabled(state);
+
+          EditTextPreference flickerAmountFG = (EditTextPreference) findPreference("flickerAmountFG");
+          flickerAmountFG.setEnabled(state);
+
+          EditTextPreference touchDistance = (EditTextPreference) findPreference("touchDistance");
+          touchDistance.setEnabled(state);
+
+          EditTextPreference touchSpeedUp = (EditTextPreference) findPreference("touchSpeedUp");
+          touchSpeedUp.setEnabled(state);
+
+          EditTextPreference touchSpeedDown = (EditTextPreference) findPreference("touchSpeedDown");
+          touchSpeedDown.setEnabled(state);
+
+          SliderPreference transparency = (SliderPreference) findPreference("transparency");
+          transparency.setEnabled(state);
+
+          ListPreference directionSettingFG = (ListPreference) findPreference("directionSettingFG");
+          directionSettingFG.setEnabled(state);
+
+          ListPreference directionSettingBG = (ListPreference) findPreference("directionSettingBG");
+          directionSettingBG.setEnabled(state);
+
+          ColorPickerPreference color1 = (ColorPickerPreference) findPreference("color1");
+          color1.setEnabled(state);
+
+          ColorPickerPreference color2 = (ColorPickerPreference) findPreference("color2");
+          color2.setEnabled(state);
+
+          ColorPickerPreference color3 = (ColorPickerPreference) findPreference("color3");
+          color3.setEnabled(state);
+
+          ColorPickerPreference color4 = (ColorPickerPreference) findPreference("color4");
+          color4.setEnabled(state);
+
+          ColorPickerPreference colorBG = (ColorPickerPreference) findPreference("colorBG");
+          colorBG.setEnabled(state);
+
+          ColorPickerPreference colorTouch = (ColorPickerPreference) findPreference("colorTouch");
+          colorTouch.setEnabled(state);
+
+          CheckBoxPreference flatColoring = (CheckBoxPreference) findPreference("flatColoring");
+          flatColoring.setEnabled(state);
+
+          CheckBoxPreference fgBG = (CheckBoxPreference) findPreference("fgBG");
+          fgBG.setEnabled(state);
+
+          CheckBoxPreference bgAlt = (CheckBoxPreference) findPreference("bgAlt");
+          bgAlt.setEnabled(state);
+
+
+          CheckBoxPreference fgRandom = (CheckBoxPreference) findPreference("fgRandom");
+          fgRandom.setEnabled(state);
+
+          CheckBoxPreference bgRandom = (CheckBoxPreference) findPreference("bgRandom");
+          bgRandom.setEnabled(state);
+
+          CheckBoxPreference useTouchColor = (CheckBoxPreference) findPreference("useTouchColor");
+          useTouchColor.setEnabled(state);
+
+          CheckBoxPreference useParallax = (CheckBoxPreference) findPreference("useParallax");
+          useParallax.setEnabled(state);
+
+          CheckBoxPreference keepTouchColor = (CheckBoxPreference) findPreference("keepTouchColor");
+          keepTouchColor.setEnabled(state);
+
+          CheckBoxPreference touchSpeedBG = (CheckBoxPreference) findPreference("touchSpeedBG");
+          touchSpeedBG.setEnabled(state);
+
+          CheckBoxPreference touchSpeedFG = (CheckBoxPreference) findPreference("touchSpeedFG");
+          touchSpeedFG.setEnabled(state);
+
+          EditTextPreference touchSpeedBGTarget = (EditTextPreference) findPreference("touchSpeedBGTarget");
+          touchSpeedBGTarget.setEnabled(state);
+
+          EditTextPreference touchSpeedFGTarget = (EditTextPreference) findPreference("touchSpeedFGTarget");
+          touchSpeedFGTarget.setEnabled(state);
+
+          Preference addPreset = (Preference) findPreference("addPreset");
+          addPreset.setEnabled(state);
+
+          Preference setColor4 = (Preference) findPreference("setColor4");
+          setColor4.setEnabled(state);
+
+          Preference setColor2 = (Preference) findPreference("setColor2");
+          setColor2.setEnabled(state);
+
+          EditTextPreference parallaxSensitivity = (EditTextPreference) findPreference("parallaxSensitivity");
+          parallaxSensitivity.setEnabled(state);
+
+
+          PreferenceCategory themesprocat = (PreferenceCategory) findPreference("themesprocat");
+          for (int i = 0; i < themesprocat.getPreferenceCount(); i++) {
+              themesprocat.getPreference(i).setEnabled(state);
+          }
+
+      }
+
+      private void unlockEverything() {
+          toggleState(true);
+          Preference buy = (Preference) findPreference("buy");
+          buy.setTitle("Full version detected");
+          buy.setSummary("All features available");
+          buy.setEnabled(false);
+
+          if (prefs.getBoolean("freeUnlock") && prefs.getBoolean("upgraded", false) == false) {
+              buy.setTitle("Full version detected");
+              buy.setSummary("All features available");
+              buy.setEnabled(true);
+          }
+
+      }
+
+      private void lockEverything() {
+          toggleState(false);
+
+      }
+
+      @SuppressWarnings("deprecation")
+      private void setTheme(int color1, int color2, int color3, int color4, String name) {
+          ColorPickerPreference c1 = (ColorPickerPreference) findPreference("color1");
+          c1.onColorChanged(color1);
+
+          ColorPickerPreference c2 = (ColorPickerPreference) findPreference("color2");
+          c2.onColorChanged(color2);
+
+          ColorPickerPreference c3 = (ColorPickerPreference) findPreference("color3");
+          c3.onColorChanged(color3);
+
+          ColorPickerPreference c4 = (ColorPickerPreference) findPreference("color4");
+          c4.onColorChanged(color4);
+
+          Toast.makeText(getBaseContext(), "Color theme applied: " + name, Toast.LENGTH_SHORT).show();
+
+      }
+
+      @Override
+      public void onPause() {
+          super.onPause();
+
+          prefs.putInteger("color1", prefsAndroid.getInt("color1", 0xff282828));
+          prefs.putInteger("color2", prefsAndroid.getInt("color2", 0xff646464));
+          prefs.putInteger("color3", prefsAndroid.getInt("color3", 0xff32A5CF));
+          prefs.putInteger("color4", prefsAndroid.getInt("color4", 0xff32A5CF));
+          prefs.putInteger("colorBG", prefsAndroid.getInt("colorBG", 0xff000000));
+          prefs.putInteger("colorTouch", prefsAndroid.getInt("colorTouch", 0xffFFFFFF));
+          prefs.putInteger("directionSettingBG", Integer.parseInt(prefsAndroid.getString("directionSettingBG", "0")));
+          prefs.putInteger("directionSettingFG", Integer.parseInt(prefsAndroid.getString("directionSettingFG", "0")));
+          prefs.putInteger("spaceBG", Integer.parseInt(prefsAndroid.getString("spaceBG", "0")));
+          prefs.putInteger("spaceFG", Integer.parseInt(prefsAndroid.getString("spaceFG", "0")));
+          prefs.putInteger("flickerAmountBG", Integer.parseInt(prefsAndroid.getString("flickerAmountBG", "100")));
+          prefs.putInteger("flickerAmountFG", Integer.parseInt(prefsAndroid.getString("flickerAmountFG", "100")));
+          prefs.putInteger("scrollSpeedFG", Integer.parseInt(prefsAndroid.getString("scrollSpeedFG", "100")));
+          prefs.putInteger("scrollSpeedBG", Integer.parseInt(prefsAndroid.getString("scrollSpeedBG", "100")));
+          prefs.putFloat("transparency", prefsAndroid.getFloat("transparency", 1));
+          prefs.putFloat("vignetteTransparency", prefsAndroid.getFloat("vignetteTransparency", 1));
+          prefs.putInteger("touchDistance", Integer.parseInt(prefsAndroid.getString("touchDistance", "5")));
+          prefs.putInteger("touchSpeedUp", Integer.parseInt(prefsAndroid.getString("touchSpeedUp", "100")));
+          prefs.putInteger("touchSpeedDown", Integer.parseInt(prefsAndroid.getString("touchSpeedDown", "100")));
+          prefs.putInteger("squareSizeFG", Integer.parseInt(prefsAndroid.getString("squareSizeFG", "96")));
+          prefs.putInteger("squareSizeBG", Integer.parseInt(prefsAndroid.getString("squareSizeBG", "48")));
+          prefs.putInteger("zoom", Integer.parseInt(prefsAndroid.getString("zoom", "100")));
+          prefs.putBoolean("shader", prefsAndroid.getBoolean("shader", false));
+          prefs.putBoolean("useTouch", prefsAndroid.getBoolean("useTouch", true));
+          prefs.putBoolean("useTouchColor", prefsAndroid.getBoolean("useTouchColor", false));
+          prefs.putBoolean("useParallax", prefsAndroid.getBoolean("useParallax", false));
+          prefs.putInteger("parallaxSensitivity", Integer.parseInt(prefsAndroid.getString("parallaxSensitivity", "100")));
+          prefs.putBoolean("keepTouchColor", prefsAndroid.getBoolean("keepTouchColor", true));
+          prefs.putBoolean("flatColoring", prefsAndroid.getBoolean("flatColoring", false));
+          prefs.putBoolean("fgBG", prefsAndroid.getBoolean("fgBG", true));
+          prefs.putBoolean("bgAlt", prefsAndroid.getBoolean("bgAlt", true));
+          prefs.putBoolean("bgRandom", prefsAndroid.getBoolean("bgRandom", false));
+          prefs.putBoolean("fgRandom", prefsAndroid.getBoolean("fgRandom", false));
+          prefs.putBoolean("vignette", prefsAndroid.getBoolean("vignette", true));
+          prefs.putBoolean("scrollInput", prefsAndroid.getBoolean("scrollInput", true));
+          prefs.putBoolean("wireframe", prefsAndroid.getBoolean("wireframe", false));
+          prefs.putBoolean("wireframe1", prefsAndroid.getBoolean("wireframe1", false));
+          prefs.putBoolean("change", true);
+          prefs.putBoolean("changeP", true);
+          prefs.putBoolean("touchSpeedBG", prefsAndroid.getBoolean("touchSpeedBG", false));
+          prefs.putBoolean("touchSpeedFG", prefsAndroid.getBoolean("touchSpeedFG", false));
+          prefs.putInteger("touchSpeedBGTarget", Integer.parseInt(prefsAndroid.getString("touchSpeedBGTarget", "0")));
+          prefs.putInteger("touchSpeedFGTarget", Integer.parseInt(prefsAndroid.getString("touchSpeedFGTarget", "500")));
+
+          prefs.flush();
+
+          if (prefs.getInteger("squareSizeBG") == 1234567890) {
+              prefs.putInteger("squareSizeBG", 48);
+
+              EditTextPreference squareSizeBG = (EditTextPreference) findPreference("squareSizeBG");
+              squareSizeBG.setText("48");
+              Toast.makeText(getBaseContext(), "Sorry. This code has expired.", Toast.LENGTH_LONG).show();
+          }
+
+          if (prefs.getInteger("squareSizeBG") == 666777888) {
+              prefs.putBoolean("freeUnlock", true);
+              prefs.putInteger("squareSizeBG", 48);
+
+              EditTextPreference squareSizeBG = (EditTextPreference) findPreference("squareSizeBG");
+              squareSizeBG.setText("48");
+
+              Toast.makeText(getBaseContext(), "Secret code entered. Full version unlocked!", Toast.LENGTH_LONG).show();
+
+          }
+
+          if (prefs.getInteger("squareSizeBG") <= 16) {
+              if (prefs.getInteger("squareSizeBG") <= 8) {
+                  prefs.putInteger("squareSizeBG", 8);
+              }
+
+              Toast.makeText(getBaseContext(), "Warning: Device may lag with a very low size.", Toast.LENGTH_LONG).show();
+          }
+
+          if (prefs.getInteger("squareSizeFG") <= 16) {
+              if (prefs.getInteger("squareSizeFG") <= 8) {
+                  prefs.putInteger("squareSizeFG", 8);
+              }
+              Toast.makeText(getBaseContext(), "Warning: Device may lag with a very low size.", Toast.LENGTH_LONG).show();
+          }
+
+          prefs.flush();
+      }
+  }
+
+           </code>
+         </pre>
+       </div>
+
+
+       <link rel="stylesheet" href="css/dracula.css">
+
+
+       <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/highlight.min.js"></script>
+       <script>hljs.initHighlightingOnLoad();</script>
+      <!-- /.row -->
 
 
         <!-- /.row -->
