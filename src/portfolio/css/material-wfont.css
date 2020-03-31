@@ -2293,12 +2293,12 @@ body {
 }
 
 h1 small{
-  color: #9575CD;
+  color:#FDD835;
 }
 
 
 h3{
-  color: #9575CD;
+  color: #FDD835;
 }
 
 p{
@@ -2326,13 +2326,13 @@ hr {
   margin-top: 20px;
   margin-bottom: 20px;
   border: 0;
-  border-top: 2px solid #9575CD;
+  border-top: 2px solid #FDD835;
 }
 
 .page-header {
   padding-bottom: 9px;
   margin: 40px 0 20px;
-  border-bottom: 2px solid #9575CD;
+  border-bottom: 2px solid #FDD835
 }
 
 body.inverse {
@@ -4817,7 +4817,7 @@ fieldset[disabled] .navbar .btn-link:focus {
 }
 .navbar,
 .navbar-default {
-  background-color: #673AB7
+  background-color: #5E35B1;
 }
 .navbar-primary {
   background-color: #9575CD;
@@ -4844,7 +4844,7 @@ fieldset[disabled] .navbar .btn-link:focus {
   background-color: #9c27b0;
 }
 .navbar-material-deeppurple {
-  background-color: #673ab7;
+  background-color: #4527A0;
 }
 .navbar-material-indigo {
   background-color: #3f51b5;

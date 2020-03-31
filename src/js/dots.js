@@ -36,7 +36,7 @@ function draw() {
   for (var i = 0, x = stars.length; i < x; i++) {
     var s = stars[i];
 
-    ctx.fillStyle = "#00ff01";
+    ctx.fillStyle = "#FDD835";
     ctx.beginPath();
     ctx.arc(s.x, s.y, s.radius, 0, 2 * Math.PI);
     ctx.fill();

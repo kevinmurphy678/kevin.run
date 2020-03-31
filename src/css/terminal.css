@@ -7,15 +7,15 @@
   height: 0px;
 }
 ::-webkit-scrollbar-thumb {
-  background: #1f4b18;
+  background: #9575CD;
   border: 0px none #ffffff;
   border-radius: 0px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #36882b;
+  background: #9575CD;
 }
 ::-webkit-scrollbar-thumb:active {
-  background: #3f9b31;
+  background: #9575CD;
 }
 ::-webkit-scrollbar-track {
   background: #000000;
@@ -23,10 +23,10 @@
   border-radius: 0px;
 }
 ::-webkit-scrollbar-track:hover {
-  background: #000000;
+  background: #212121;
 }
 ::-webkit-scrollbar-track:active {
-  background: #000000;
+  background: #212121;
 }
 ::-webkit-scrollbar-corner {
   background: transparent;
@@ -35,25 +35,25 @@
 h1 {text-align:center;  font: 14pt monospace; line-height: 0;}
 
 a:link {
-  color: #45ff00;
+  color: #9575CD;
 }
 
 /* visited link */
 a:visited {
-  color: #45ff00;
+  color: #7c5cb2;
 }
 
 canvas {
   position: absolute;
-  background: #0a1e0a;
-  transform: translateY(-25%);
+  background: #1c1038;
+  transform: translateY(-15%);
   z-index : -1;
 }
 
 html{
-  background: #0a1e0a;
-  color: #0a0;
-  text-shadow: 0 0 3px #0f0;
+  background: #1c1038;
+  color: #694c98;
+  text-shadow: 0 0 3px #b774fa;
   font: 14pt monospace;
   white-space: pre;
   tab-size: 4;
