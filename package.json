@@ -19,7 +19,7 @@
     "gulp-load-plugins": "^1.6.0",
     "gulp-rename": "^1.4.0",
     "gulp-replace": "^0.6.1",
-    "jquery": "3.4.0",
+    "jquery": "3.5.0",
     "mocha": "^5.2.0",
     "modernizr": "^3.9.1",
     "normalize.css": "8.0.0",
