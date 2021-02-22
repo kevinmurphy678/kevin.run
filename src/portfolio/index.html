@@ -23,6 +23,7 @@
 	  <script src="js/modernizr.custom.min.js"></script>
 
 
+
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
     <!--[if lt IE 9]>
@@ -75,24 +76,13 @@
                 <h1 class="page-header">Projects
                     <small>Things I've made</small>
                 </h1>
-
-
             </div>
-
         </div>
-        <!-- /.row -->
-
-        <!-- Projects Row -->
-
-
 
 		<select class="form-control">
             <option value="date-created">Date Created</option>
             <option value="title">Title</option>
-
-          </select>
-
-
+    </select>
 
 
 		<br>
@@ -216,6 +206,8 @@
                 <p>A 3D chunk based voxel game. Made with XNA. Not minecraft </p>
 				</div>
             </div>
+
+
             <div class="grid__brick col-md-4" data-groups='["default"]' data-date-created="2014-3-26" data-title="Website Editor">
                 <div class = "well">
 				<a href="websiteeditor.html">
@@ -227,6 +219,8 @@
                 <p>A tool to edit this website and add new projects. Made with C# </p>
 				</div>
             </div>
+
+
 			            <div class="grid__brick col-md-4" data-groups='["default"]' data-date-created="2016-2-29" data-title="Stardew Injector">
                 <div class = "well">
 				<a href="StardewInjector.html">
@@ -238,6 +232,8 @@
                 <p>A mod for the game Stardew Valley. It modifies the assembly and patches in tweaks using Mono.Cecil. </p>
 				</div>
             </div>
+
+
 		            <div class="grid__brick col-md-4" data-groups='["default"]' data-date-created="2015-8-30" data-title="ImgurCV">
                 <div class = "well">
 				<a href="ImgureCV.html">
@@ -261,6 +257,8 @@
                 <p>A tool to visualize various sorting algorithms. Made with C++ using SFML and imgui. View the page for animated previews and code. </p>
 				</div>
             </div>
+
+
             <div class="grid__brick col-md-4" data-groups='["default"]' data-date-created="2018-1-2" data-title="Ethergalaxy">
                 <div class = "well">
 				<a href="ethergalaxy.html">
@@ -272,7 +270,9 @@
                 <p>Concept smart contract game ran on the ethereum network. Made with react, solidity, c raylib, and emscripten. </p>
 				</div>
             </div>
-       	<!-- End -->            <div class="grid__brick col-md-4" data-groups='["default"]' data-date-created="5-15-2017" data-title="JSP Cryptotracker">
+
+
+       	  <div class="grid__brick col-md-4" data-groups='["default"]' data-date-created="5-15-2017" data-title="JSP Cryptotracker">
                 <div class = "well">
 				<a href="cryptotracker.html">
                     <img class="img-responsive img-hover" src="images/crypto1.png" alt="">
@@ -309,6 +309,8 @@
             </div>
     </div>
 
+    </div>
+
       <hr>
 
         <!-- Footer -->
@@ -328,11 +330,11 @@
 
     <!-- Bootstrap Core JavaScript -->
     <script src="js/bootstrap.min.js"></script>
-
+    <script src="js/jquery.shuffle.modernizr.min.js"></script>
 	 <script src="js/ripples.min.js"></script>
 	<script src="js/material.min.js"></script>
 	<!-- Shuffle! -->
-<script src="js/jquery.shuffle.modernizr.min.js"></script>
+
 
 	<script>
 		var DEMO = (function( $ ) {
@@ -397,7 +399,7 @@
 	<script>
 
 		$(window).load(function() {
-			$.material.init();
+
 			$.material.ripples();
 			DEMO.init();
 			setupSorting();
@@ -420,9 +422,6 @@
 
 
 	</script>
-
-
-
 
 
 
